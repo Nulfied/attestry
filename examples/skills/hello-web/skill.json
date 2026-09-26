@@ -1,0 +1,12 @@
+{
+  "name": "hello-web",
+  "version": "1.0.0",
+  "description": "Fetch a URL and return its readable text. A minimal example of a packaged Attestry skill.",
+  "author": "Nulfied",
+  "license": "MIT",
+  "entry": "skill.py",
+  "runtime": "python>=3.9",
+  "requires": [],
+  "tools": ["fetch_page.nts.json"],
+  "keywords": ["http", "example"]
+}

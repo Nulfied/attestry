@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "attestry"
+version = "0.1.0"
+description = "Verifiable trust infrastructure for AI agents: model-drift detection, tool-schema translation, consent receipts and a serverless skill registry, over one signed append-only ledger."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Nulfied" }]
+keywords = [
+    "ai-agents",
+    "mcp",
+    "model-drift",
+    "tool-schema",
+    "consent",
+    "audit-log",
+    "transparency-log",
+    "provenance",
+    "merkle",
+    "ed25519",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Logging",
+    "Typing :: Typed",
+]
+
+# No runtime dependencies, on purpose. A tool whose job is to let a stranger
+# verify your work should not require them to install a dependency tree first.
+dependencies = []
+
+[project.optional-dependencies]
+# A constant-time, much faster Ed25519. The bundled pure-Python implementation
+# produces identical keys and signatures, so this is purely a swap for speed.
+fast = ["cryptography>=41"]
+dev = ["pyflakes>=3", "cryptography>=41"]
+
+[project.urls]
+Homepage = "https://github.com/Nulfied/attestry"
+Repository = "https://github.com/Nulfied/attestry"
+Issues = "https://github.com/Nulfied/attestry/issues"
+Changelog = "https://github.com/Nulfied/attestry/blob/main/CHANGELOG.md"
+
+[project.scripts]
+attestry = "attestry.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["attestry*"]
+
+[tool.setuptools.package-data]
+attestry = ["py.typed"]

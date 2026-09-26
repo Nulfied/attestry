@@ -1,0 +1,38 @@
+{
+  "default_deny": true,
+  "grants": [
+    {
+      "id": "inbox-triage",
+      "actor": "agent:inbox-triage",
+      "resources": ["email:*/INBOX"],
+      "actions": ["read", "list", "search"],
+      "purposes": ["draft daily priorities", "flag urgent messages"],
+      "data_classes": ["message_content", "contact_info"],
+      "egress": [],
+      "max_items": 200,
+      "note": "Read-only and local-only. Sending and deleting are not granted, and nothing may leave the machine."
+    },
+    {
+      "id": "calendar-scheduler",
+      "actor": "agent:scheduler",
+      "resources": ["calendar:*"],
+      "actions": ["read", "list", "write"],
+      "purposes": ["schedule meetings", "resolve conflicts"],
+      "data_classes": ["calendar", "contact_info"],
+      "egress": ["api.anthropic.com"],
+      "expires": "2027-01-01T00:00:00Z",
+      "note": "May create events and may call a model to word invitations. Expires so it has to be reconsidered."
+    },
+    {
+      "id": "repo-reader",
+      "actor": "agent:code-review",
+      "resources": ["files:/srv/checkouts/*", "repo:*"],
+      "actions": ["read", "list", "search"],
+      "purposes": ["review a pull request"],
+      "data_classes": ["files"],
+      "egress": ["api.anthropic.com"],
+      "max_items": 500,
+      "note": "Source only. Credentials are a different data class and are not granted."
+    }
+  ]
+}

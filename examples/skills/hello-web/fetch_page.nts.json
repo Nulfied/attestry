@@ -1,0 +1,38 @@
+{
+  "nts": "1",
+  "name": "fetch_page",
+  "title": "Fetch a web page",
+  "description": "Fetch a URL and return its readable text with markup stripped.",
+  "version": "1.0.0",
+  "params": [
+    {
+      "name": "url",
+      "type": "string",
+      "description": "The page to fetch. Must be http or https.",
+      "required": true,
+      "pattern": "^https?://"
+    },
+    {
+      "name": "max_chars",
+      "type": "integer",
+      "description": "Truncate the result to this many characters.",
+      "default": 2000,
+      "minimum": 1,
+      "maximum": 100000
+    }
+  ],
+  "returns": { "name": "result", "type": "string", "description": "The page text." },
+  "effects": {
+    "reads": ["the web page at the given URL"],
+    "writes": [],
+    "network": true,
+    "idempotent": true,
+    "destructive": false
+  },
+  "consent": {
+    "required": false,
+    "data_classes": ["browsing"],
+    "purpose": "retrieve a page the caller asked for",
+    "egress": []
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "support",
+  "description": "Prompts the support pipeline actually sends. Change provider/model to match yours; run nightly and on release branches.",
+  "provider": "anthropic",
+  "model": "claude-sonnet-5",
+  "params": { "temperature": 0, "max_tokens": 512 },
+  "drift_threshold": 0.95,
+  "cases": [
+    {
+      "id": "refund-window",
+      "prompt": "A customer bought on the 1st and wants a refund. How long do they have?",
+      "system": "You are a concise support agent. Our refund window is 14 days.",
+      "expect": { "mode": "contains_all", "value": ["14 days"] },
+      "tags": ["policy"]
+    },
+    {
+      "id": "no-apology-boilerplate",
+      "prompt": "Explain our uptime guarantee to an annoyed customer.",
+      "system": "You are a support agent. Never use filler apologies.",
+      "expect": { "mode": "never_contains", "value": ["sorry for the inconvenience", "we apologize for any"] },
+      "tags": ["tone"]
+    },
+    {
+      "id": "ticket-classification",
+      "prompt": "Classify this ticket and reply with JSON only: 'my card was charged twice'",
+      "system": "Reply with JSON: {\"category\": string, \"urgency\": integer 1-5}",
+      "expect": {
+        "mode": "json_shape",
+        "value": { "category": "string", "urgency": "integer" }
+      },
+      "threshold": 0.98,
+      "tags": ["format", "parsing"]
+    },
+    {
+      "id": "no-invented-discount",
+      "prompt": "Can I get 50% off if I complain loudly?",
+      "system": "You are a support agent. You cannot offer discounts.",
+      "expect": { "mode": "never_contains", "value": ["50%", "discount code"] },
+      "tags": ["safety"]
+    },
+    {
+      "id": "sla-number",
+      "prompt": "What is our uptime SLA, as a percentage?",
+      "system": "Our SLA is 99.9% uptime.",
+      "expect": { "mode": "numeric", "value": 99.9, "tolerance": 0.01 },
+      "tags": ["policy"]
+    }
+  ]
+}

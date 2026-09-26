@@ -1,0 +1,52 @@
+{
+  "name": "example",
+  "description": "A starter suite that runs against the free echo provider. Replace provider/model with ollama, openai or anthropic and rewrite the cases against prompts your system actually sends.",
+  "provider": "echo",
+  "model": "demo",
+  "params": {
+    "temperature": 0
+  },
+  "drift_threshold": 0.95,
+  "cases": [
+    {
+      "id": "refund-window",
+      "prompt": "How long does a customer have to request a refund?",
+      "system": "You are a concise support agent.",
+      "expect": {
+        "mode": "contains_all",
+        "value": [
+          "refund"
+        ]
+      },
+      "tags": [
+        "policy"
+      ]
+    },
+    {
+      "id": "tone-check",
+      "prompt": "Explain our uptime guarantee to an annoyed customer.",
+      "expect": {
+        "mode": "never_contains",
+        "value": [
+          "sorry for the inconvenience"
+        ]
+      },
+      "tags": [
+        "tone"
+      ]
+    },
+    {
+      "id": "length-guard",
+      "prompt": "Summarise the outage in one sentence.",
+      "expect": {
+        "mode": "regex",
+        "value": [
+          "Answer|answer"
+        ]
+      },
+      "tags": [
+        "format"
+      ]
+    }
+  ]
+}
