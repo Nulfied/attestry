@@ -1,0 +1,99 @@
+name: publish
+
+# Publishing runs on a GitHub Release, and on manual dispatch for dry runs
+# against TestPyPI. Cutting a release is the deliberate act; a push to main is
+# not, which is why main is not a trigger here.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Where to publish"
+        required: true
+        default: testpypi
+        type: choice
+        options: [testpypi, pypi]
+
+jobs:
+  test:
+    name: tests must pass before anything is published
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e .
+      - run: python -m unittest discover -s tests -t .
+
+  build:
+    name: build the distributions
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build twine
+      - run: python -m build
+      - run: python -m twine check --strict dist/*
+
+      - name: The version being published must match the tag
+        # A release tagged v0.2.0 that ships 0.1.0 is the kind of mistake that
+        # is very hard to undo on PyPI, where a filename can never be reused.
+        if: github.event_name == 'release'
+        run: |
+          set -e
+          tag="${GITHUB_REF_NAME#v}"
+          built=$(python -c "import re,pathlib; print(re.search(r'attestry-(.+?)-py3', [p.name for p in pathlib.Path('dist').glob('*.whl')][0]).group(1))")
+          echo "tag=$tag built=$built"
+          test "$tag" = "$built" || { echo "::error::tag $tag does not match built version $built"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    name: publish to TestPyPI
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/attestry
+    permissions:
+      # Trusted Publishing: GitHub mints a short-lived OIDC token that PyPI
+      # verifies against the publisher configured on its side. No API token is
+      # ever created, stored as a secret, or able to leak from this repository.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    name: publish to PyPI
+    needs: build
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/attestry
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
